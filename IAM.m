@@ -31,42 +31,17 @@ for j = 1:niter;
     
     payout = zeros(policyDuration,1);
     
-    for k = 1:policyDuration;
-        
-        deductible = 0.05 * assetCount * expectedAssetPerformance * performanceValue;
-        
-        %for k = 1:assetCount
-        
-        %bernoulli = binornd(1,assetReliability,[assetCount,1])
-        
-        %end
-        
-        %for k = 1:assetCount
-        
-        assetPerformanceV = expectedAssetPerformance * binornd(1, assetReliability,[assetCount,1]);
-        
-        %end
-        
-        %stop()
-        
-        performance = sum(assetPerformanceV);
-        
-        loss = performanceValue * (expectedAssetPerformance * assetCount - performance);
-        
-        unclampedPayout = loss - deductible;
-        
-        if loss > deductible;
-            
-            payout(k) = unclampedPayout;
-            
-        end
-        
-        %award =
-        
-    end
+    deductible = 0.05 * assetCount * expectedAssetPerformance * performanceValue;
+    assetPerformanceV = expectedAssetPerformance * binornd(1, assetReliability, [assetCount,policyDuration]);
+    performance = sum(assetPerformanceV,1);
+    loss = performanceValue * (expectedAssetPerformance * assetCount - performance);
+    unclampedPayout = loss - deductible;
+    payout(loss > deductible) = unclampedPayout(loss > deductible);
+    % Here is a more straightforward way of doing the above:
+    % payout = loss - deductible; payout(payout<0) = 0;
     
     award(j) = sum(payout);
-    
+
 end
 
 jj = award
