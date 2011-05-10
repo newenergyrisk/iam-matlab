@@ -1,7 +1,13 @@
 %
-%   this script is to model the Independent Assest Model as
+%   this script is to model the Independent Asset Model (IAM) as
 %   developed in other software
 %
+
+%% This file works on its own.
+%% There is a second implementation of the IAM in this directory
+%% that illustrates some usage of OO programming  in MATLAB.
+%% The starting point for that is iamDriver.m. The class that it uses
+%% is in AssetGroup.m.
 
 rng default
 
