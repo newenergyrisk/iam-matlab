@@ -21,11 +21,7 @@ ensembleCount = 10;
 % In a parallelized computation, these could be farmed out to different
 % processors.
 
-% The inner loop is a sum over the 8760 hours in the policy duration.
-
-policyDuration = 365 * 24;
-
-% The model 
+% The asset model 
 
 assetCount = 50;
 
@@ -35,27 +31,52 @@ expectedAssetPerformance = 200;
 
 %%%%%%%%%%%%%
 
-% This number is a percentage characterizing the threshold for payouts.
-
-deductible = 0.05;
-
 % This number converts performance to a value, e.g., to a price in dollars.
 % If expectedAssetPerformance is in watts and the value is $0.10 per
 % kilowatt-hour, then the performance value is 0.0001.
 
 performanceValue = 0.0001;
 
+% The policy duration.
+
+policyDuration = 365 * 24;
+
+% The inner loop is a sum over the 8760 hours in the policy duration.
+
+% The deductible is a percentage characterizing the threshold for payouts.
+
+deductible = 0.05 * assetCount * expectedAssetPerformance * performanceValue;
+
 %%%%%%%%%%%%%
 
-lossEnsemble = zeros(ensembleCount);
+% The following vector is allocated to collect
+% the total loss for each Monto Carlo run.
+awards = zeros(ensembleCount);
+
+% Begin the Monte Carlo loop
 
 for ensembleIndex = 1 : ensembleCount;
-    loss = 0;
-    for hour = 0 : policyDuration - 1;
+    % The following variable is used to accumulate the the loss over all
+    % 8760 time slices in the policy duration.
+    award = 0;
+    for t = 0 : policyDuration - 1;
         % Maximum loss in each time slot.
-        loss = loss + assetCount * expectedAssetPerformance * performanceValue;
+        performance = 47 * expectedAssetPerformance;
+        % Convert this to a dollar loss
+        loss = performanceValue * (expectedAssetPerformance * assetCount - performance);
+        % Compare it with the deductible
+        unclampedPayout = loss - deductible;
+        % payout is the payout at a particular time slice
+        % it is nonzero only if unclampedPayout is > 0.
+        payout = 0;
+        if (unclampedPayout > 0);
+            payout = unclampedPayout;
+        end
+        % Add the payout at this time slice to the accumulating award.
+        award = award + payout;
+        
     end
-    lossEnsemble(ensembleIndex) = loss;
+    awards(ensembleIndex) = award;
 end
 
 %%%%%%%%%%%%%
@@ -63,12 +84,10 @@ end
 % Present the results
 
 for ensembleIndex = 1 : ensembleCount;
-    lossEnsemble(ensembleIndex)
+    awards(ensembleIndex)
 end
 
 %%%%%%%%%%%%%
-
-
 
 
 
