@@ -4,6 +4,9 @@
 % iamDriver.m
 % This is an implementation, in MATLAB, of the Indendent Assets Model (IAM).
 
+% This class has no relationship to IAM.m, which is a separate standalone
+% implementation of the Independent Assets Model.
+
 %%% To execute this file, make sure the directory it contains is in your
 %%% path --- using File -> Set Path... to adjust the path if necessary.
 
@@ -50,7 +53,8 @@ deductible = 0.05 * assetCount * expectedAssetPerformance * performanceValue;
 %%%%%%%%%%%%%
 
 % The following vector is allocated to collect
-% the total loss for each Monto Carlo run.
+% the award for each Monto Carlo run. The award is the loss for each time
+% period in the policy, summed over all time periods.
 awards = zeros(ensembleCount);
 
 % Begin the Monte Carlo loop
@@ -59,9 +63,12 @@ for ensembleIndex = 1 : ensembleCount;
     % The following variable is used to accumulate the the loss over all
     % 8760 time slices in the policy duration.
     award = 0;
+    % Instantiate an instance of AssetGroup
+    AG = AssetGroup(expectedAssetPerformance, assetReliability, assetCount);
     for t = 0 : policyDuration - 1;
-        % Maximum loss in each time slot.
-        performance = 47 * expectedAssetPerformance;
+        % Get the asset performance vector and sum it up.
+        assetPerformanceV = AG.assetPerformanceV;
+        performance = sum(assetPerformanceV);
         % Convert this to a dollar loss
         loss = performanceValue * (expectedAssetPerformance * assetCount - performance);
         % Compare it with the deductible
@@ -73,8 +80,7 @@ for ensembleIndex = 1 : ensembleCount;
             payout = unclampedPayout;
         end
         % Add the payout at this time slice to the accumulating award.
-        award = award + payout;
-        
+        award = award + payout;  
     end
     awards(ensembleIndex) = award;
 end
@@ -83,12 +89,12 @@ end
 
 % Present the results
 
+averageAward = 0;
 for ensembleIndex = 1 : ensembleCount;
-    awards(ensembleIndex)
+    averageAward = averageAward + awards(ensembleIndex);
 end
+averageAward = averageAward / ensembleCount
 
 %%%%%%%%%%%%%
-
-
 
 
