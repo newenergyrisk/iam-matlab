@@ -16,6 +16,8 @@
 
 %%% Hit the "Save and Run" button.
 
+tic
+
 % The outer loop in this file loops over the Monte Carlo
 % configurations.
 
@@ -96,5 +98,7 @@ end
 averageAward = averageAward / ensembleCount
 
 %%%%%%%%%%%%%
+
+toc
 
 
